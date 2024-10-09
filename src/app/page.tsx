@@ -80,9 +80,9 @@ const AnimatedSection = ({ children }) => {
       ref={ref}
       animate={controls}
       initial="hidden"
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 1 }}
       variants={{
-        visible: { opacity: 1, y: 0 },
+        visible: { opacity: 0.8, y: 0 },
         hidden: { opacity: 0, y: 50 }
       }}
     >
@@ -215,15 +215,15 @@ export default function Component() {
               >
                 <form className="flex space-x-2">
                   <Input
-                    className="max-w-lg flex-1 bg-gray-800 border-purple-500 text-white placeholder-gray-400"
+                    className="max-w-lg flex-1 bg-gray-800 text-lg border-purple-500 text-white placeholder-gray-400"
                     placeholder="Enter your email"
                     type="email"
                   />
-                  <Button className="bg-purple-600 text-white hover:bg-purple-700" type="submit">
+                  <Button className="bg-purple-600 text-lg text-white hover:bg-purple-700" type="submit">
                     Join the League
                   </Button>
                 </form>
-                <p className="text-xs text-gray-400">
+                <p className="text-lg text-gray-400">
                   Sign up for exclusive superhero content.
                   <a className="underline underline-offset-2 text-purple-400 hover:text-purple-300" href="#">
                     Terms & Conditions
@@ -232,14 +232,15 @@ export default function Component() {
               </motion.div>
             </div>
           </div>
-          {[...Array(10)].map((_, i) => (
+         {[...Array(10)].map((_, i) => (
             <FloatingHero
               key={i}
               delay={i * 2}
               icon={i % 2 === 0 ? Shield : Zap}
               color={i % 2 === 0 ? "text-purple-500" : "text-yellow-500"}
             />
-          ))}
+          ))} 
+          
         </section>
         <AnimatedSection>
           <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-800">
