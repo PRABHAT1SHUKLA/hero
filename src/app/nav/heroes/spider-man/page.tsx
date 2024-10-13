@@ -1,63 +1,180 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
+import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader'
+import { OrbitControls, PerspectiveCamera, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-function SpiderMask() {
-  const gltf = useLoader(GLTFLoader, '/spiderman-mask.glb')
-  const meshRef = useRef()
+function SpiderWebBackground({ scroll }) {
+  const groupRef = useRef()
+  const [paths, setPaths] = useState([])
 
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.01
+  useEffect(() => {
+    const loader = new SVGLoader()
+    loader.load('/placeholder.svg', (data) => {
+      const paths = data.paths.map((path) => {
+        const material = new THREE.MeshBasicMaterial({
+          color: path.color,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        })
+        const shapes = path.toShapes(true)
+        return shapes.map((shape) => {
+          const geometry = new THREE.ShapeGeometry(shape)
+          return new THREE.Mesh(geometry, material)
+        })
+      }).flat()
+      setPaths(paths)
+    })
+  }, [])
+
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = scroll.current * 0.2
+      groupRef.current.position.z = -scroll.current * 10
     }
   })
 
   return (
-    <primitive
-      object={gltf.scene}
-      ref={meshRef}
-      scale={[0.5, 0.5, 0.5]}
-      position={[0, 0, 0]}
-    />
+    <group ref={groupRef}>
+      {paths.map((path, i) => (
+        <primitive key={i} object={path} />
+      ))}
+    </group>
   )
 }
 
-export default function SpidermanFanPage() {
-  const [showInfo, setShowInfo] = useState(false)
+function SpiderMask({ scroll }) {
+  const texture = useTexture('/placeholder.svg')
+  const meshRef = useRef()
+
+  useFrame(() => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y = scroll.current * 0.5
+      meshRef.current.position.y = Math.sin(scroll.current) * 2
+    }
+  })
 
   return (
-    <div className="relative h-screen w-full bg-gradient-to-b from-red-600 to-blue-900">
-      <Canvas className="h-full w-full">
-        <PerspectiveCamera makeDefault position={[0, 0, 5]} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <SpiderMask />
-        <OrbitControls enableZoom={false} />
-      </Canvas>
-      <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-        <h1 className="mb-4 text-4xl font-bold text-white">Welcome Spider-Fans!</h1>
-        <button
-          className="rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700"
-          onClick={() => setShowInfo(!showInfo)}
-        >
-          {showInfo ? 'Hide Info' : 'Show Info'}
-        </button>
+    <mesh ref={meshRef}>
+      <planeGeometry args={[5, 5]} />
+      <meshBasicMaterial map={texture} transparent />
+    </mesh>
+  )
+}
+
+export default function SpidermanFanSite() {
+  const scrollRef = useRef(0)
+  const [showBio, setShowBio] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      scrollRef.current = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-red-600 to-blue-900">
+      <div className="fixed inset-0">
+        <Canvas>
+          <PerspectiveCamera makeDefault position={[0, 0, 10]} />
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} />
+          <SpiderWebBackground scroll={scrollRef} />
+          <SpiderMask scroll={scrollRef} />
+          <OrbitControls enableZoom={false} enablePan={false} />
+        </Canvas>
       </div>
-      {showInfo && (
-        <div className="absolute left-0 right-0 top-0 m-4 rounded bg-white bg-opacity-80 p-4 text-center">
-          <h2 className="mb-2 text-2xl font-bold">Spider-Man Facts</h2>
-          <ul className="list-inside list-disc text-left">
-            <li>Spider-Man's real name is Peter Parker</li>
-            <li>He was created by Stan Lee and Steve Ditko in 1962</li>
-            <li>His first appearance was in Amazing Fantasy #15</li>
-            <li>He has "spider-sense" that warns him of danger</li>
-          </ul>
-        </div>
-      )}
+      
+      <div className="relative z-10">
+        <header className="flex items-center justify-between p-6 text-white">
+          <h1 className="text-4xl font-bold">Spider-Man Fan Site</h1>
+          <nav>
+            <Button variant="outline" className="mr-2">Home</Button>
+            <Button variant="outline" className="mr-2">Gallery</Button>
+            <Button variant="outline">Contact</Button>
+          </nav>
+        </header>
+
+        <main className="container mx-auto mt-12 p-6">
+          <section className="mb-12">
+            <Card className="bg-white bg-opacity-80">
+              <CardHeader>
+                <CardTitle>Welcome Spider-Fans!</CardTitle>
+                <CardDescription>Swing into the amazing world of your friendly neighborhood Spider-Man</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>Explore the web-slinging adventures, learn about Spider-Man's greatest foes, and discover the man behind the mask!</p>
+              </CardContent>
+            </Card>
+          </section>
+
+          <section className="mb-12">
+            <Tabs defaultValue="powers" className="bg-white bg-opacity-80 p-6 rounded-lg">
+              <TabsList>
+                <TabsTrigger value="powers">Powers</TabsTrigger>
+                <TabsTrigger value="villains">Villains</TabsTrigger>
+                <TabsTrigger value="allies">Allies</TabsTrigger>
+              </TabsList>
+              <TabsContent value="powers">
+                <h3 className="text-2xl font-bold mb-4">Spider-Man's Powers</h3>
+                <ul className="list-disc pl-6">
+                  <li>Superhuman strength, speed, and agility</li>
+                  <li>Wall-crawling ability</li>
+                  <li>Spider-sense</li>
+                  <li>Web-shooting (mechanical web-shooters)</li>
+                </ul>
+              </TabsContent>
+              <TabsContent value="villains">
+                <h3 className="text-2xl font-bold mb-4">Spider-Man's Villains</h3>
+                <ul className="list-disc pl-6">
+                  <li>Green Goblin</li>
+                  <li>Doctor Octopus</li>
+                  <li>Venom</li>
+                  <li>Mysterio</li>
+                </ul>
+              </TabsContent>
+              <TabsContent value="allies">
+                <h3 className="text-2xl font-bold mb-4">Spider-Man's Allies</h3>
+                <ul className="list-disc pl-6">
+                  <li>Mary Jane Watson</li>
+                  <li>Aunt May</li>
+                  <li>Harry Osborn</li>
+                  <li>The Avengers</li>
+                </ul>
+              </TabsContent>
+            </Tabs>
+          </section>
+
+          <section className="mb-12">
+            <Card className="bg-white bg-opacity-80">
+              <CardHeader>
+                <CardTitle>Peter Parker's Biography</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => setShowBio(!showBio)}>
+                  {showBio ? 'Hide Bio' : 'Show Bio'}
+                </Button>
+                {showBio && (
+                  <p className="mt-4">
+                    Peter Parker, a brilliant but socially awkward high school student, gained spider-like abilities after being bitten by a radioactive spider. Motivated by personal tragedy, he chose to use his powers for good, becoming the amazing Spider-Man!
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </section>
+        </main>
+
+        <footer className="bg-black bg-opacity-50 p-6 text-white text-center">
+          <p>&copy; 2024 Spider-Man Fan Site. All rights reserved.</p>
+        </footer>
+      </div>
     </div>
   )
 }
