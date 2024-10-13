@@ -144,10 +144,10 @@ export default function Component() {
   }
 
   const heroes = [
-    { name: "Superman", route: "/heroes/superman" },
-    { name: "Batman", route: "/heroes/batman" },
-    { name: "Spider-Man", route: "/heroes/spider-man" },
-    { name: "Iron Man", route: "/heroes/iron-man" },
+    { name: "Superman", route: "nav/heroes/super-man" },
+    { name: "Batman", route: "nav/heroes/bat-man" },
+    { name: "Spider-Man", route: "nav/heroes/spider-man" },
+    { name: "Iron Man", route: "nav/heroes/iron-man" },
   ]
 
   const villains = [

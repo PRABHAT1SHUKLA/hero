@@ -27,7 +27,7 @@ const images = [
   }
 ]
 
-const SupermanShowcase = () => {
+const IronmanShowcase = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const nextImage = () => {
@@ -104,4 +104,4 @@ const SupermanShowcase = () => {
   )
 }
 
-export default SupermanShowcase
+export default IronmanShowcase
